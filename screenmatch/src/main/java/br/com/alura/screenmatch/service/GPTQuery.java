@@ -6,7 +6,7 @@
 //
 //public class GPTQuery {
 //    public static String getTranslation(String text, String language) {
-//        OpenAiService service = new OpenAiService("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");
+//        OpenAiService service = new OpenAiService("insert api key");
 //
 //        CompletionRequest request = CompletionRequest.builder()
 //                .model("gpt-3.5-turbo-instruct")
