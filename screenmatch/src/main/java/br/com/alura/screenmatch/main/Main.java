@@ -2,6 +2,7 @@ package br.com.alura.screenmatch.main;
 
 import br.com.alura.screenmatch.model.*;
 //import br.com.alura.screenmatch.service.GPTQuery;
+import br.com.alura.screenmatch.repository.SeriesRepository;
 import br.com.alura.screenmatch.service.RequestAPI;
 
 import java.util.ArrayList;
@@ -20,8 +21,10 @@ public class Main {
     private RequestAPI requestAPI = new RequestAPI();
     private final String ADDRESS = "https://www.omdbapi.com/?t=";
     private final String API_KEY = "&apikey=ad0f5b1d";
-
-    private List<SeriesData> seriesDataGlobalList = new ArrayList<>();
+    private SeriesRepository repository;
+    public Main(SeriesRepository repository) {
+        this.repository = repository;
+    }
 
 
     public void showMenu() {
@@ -35,8 +38,7 @@ public class Main {
                            
                 0 - Exit
                 """;
-//        "9- Translate synopsis of the series in the list to any language"
-//        Translation feature not enabled because of the new OpenAI policies, which removed the free $5 credit.
+
         while(option != 0) {
 
             System.out.println(menu);
@@ -52,11 +54,6 @@ public class Main {
                     break;
                 case 3:
                     getSeriesDataGlobalList();
-//                case 9:
-//                    System.out.println("What is your language of choice?");
-//                    String language = sc.nextLine();
-//                    sc.nextLine();
-//                    translateSeriesSynopsis(language);
                 case 0:
                     System.out.println("Exiting...");
                     break;
@@ -69,7 +66,8 @@ public class Main {
 
     private void searchSeriesWeb() {
         SeriesData data = getSeriesData();
-        seriesDataGlobalList.add(data);
+        Series series = new Series(data);
+        repository.save(series);
         System.out.println(data);
     }
 
@@ -93,19 +91,12 @@ public class Main {
         seasons.forEach(System.out::println);
 }
     private void getSeriesDataGlobalList(){
-        List<Series> seriesList;
-        seriesList = seriesDataGlobalList.stream()
-                        .map(s -> new Series(s))
-                                .collect(Collectors.toList());
+        List<Series> seriesList = repository.findAll();
         seriesList.stream()
                 .sorted(Comparator.comparing(Series::getGenre))
                 .forEach(System.out::println);
     }
 
-//    private void translateSeriesSynopsis(String language){
-//        seriesDataGlobalList.stream()
-//                .map(s -> getTranslation(language, s.synopsis()).trim())
-//                .forEach(System.out::println);
-//    }
+
 }
 
