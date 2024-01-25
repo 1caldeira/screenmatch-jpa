@@ -22,7 +22,7 @@ public class Series {
     private String actors;
     private String synopsis;
     private String poster;
-    @Transient
+    @OneToMany(mappedBy = "series", cascade = CascadeType.ALL, fetch=FetchType.EAGER)
     private List<Episode> episodes = new ArrayList<>();
 
     public Series() {
@@ -100,6 +100,7 @@ public class Series {
     }
 
     public void setEpisodes(List<Episode> episodes) {
+        episodes.forEach(e -> e.setSeries(this));
         this.episodes = episodes;
     }
 
@@ -111,6 +112,7 @@ public class Series {
                 "Rating: " + rating + '\n' +
                 "Actors: " + actors + '\n' +
                 "Synopsis: " + synopsis + '\n' +
-                "Poster URL: " + poster + '\n';
+                "Poster URL: " + poster + '\n'+
+                "Episodes: "+ episodes + '\n';
     }
 }
