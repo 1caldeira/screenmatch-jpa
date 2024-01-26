@@ -33,6 +33,8 @@ public class Main {
                 2- Search for episodes
                 3- List of series that have already been searched
                 4- Search series by title
+                5- Search series by actor
+                6- Top 5 series
                 
                            
                 0 - Exit
@@ -53,8 +55,16 @@ public class Main {
                     break;
                 case 3:
                     getSeriesDataGlobalList();
+                    break;
                 case 4:
                     searchSeriesByTitle();
+                    break;
+                case 5:
+                    searchSeriesByActor();
+                    break;
+                case 6:
+                    searchTop5Series();
+                    break;
                 case 0:
                     System.out.println("Exiting...");
                     break;
@@ -63,19 +73,6 @@ public class Main {
             }
         }
     }
-
-    private void searchSeriesByTitle() {
-        System.out.println("Choose series by name: ");
-        var searchName = sc.nextLine();
-        Optional<Series> seriesSearch = repository.findByTitleContainingIgnoreCase(searchName);
-        if(seriesSearch.isPresent()){
-            System.out.println("Series data: "+seriesSearch.get());
-        }else{
-            System.out.println("Series not found!");
-        }
-    }
-
-
     private void searchSeriesWeb() {
         SeriesData data = getSeriesData();
         Series series = new Series(data);
@@ -118,8 +115,6 @@ public class Main {
         }else{
                 System.out.println("Series not found!");
             }
-
-
 }
     private void getSeriesDataGlobalList(){
         seriesList = repository.findAll();
@@ -127,7 +122,27 @@ public class Main {
                 .sorted(Comparator.comparing(Series::getGenre))
                 .forEach(System.out::println);
     }
-
+    private void searchSeriesByTitle() {
+        System.out.println("Choose series by name: ");
+        var searchName = sc.nextLine();
+        Optional<Series> seriesSearch = repository.findByTitleContainingIgnoreCase(searchName);
+        if(seriesSearch.isPresent()){
+            System.out.println("Series data: "+seriesSearch.get());
+        }else{
+            System.out.println("Series not found!");
+        }
+    }
+    private void searchSeriesByActor() {
+        System.out.println("Which actor do you wish to search? ");
+        var actorName = sc.nextLine();
+        List<Series> seriesFound = repository.findByActorsContainingIgnoreCase(actorName);
+        System.out.println("Series in which "+actorName+" worked on: ");
+        seriesFound.forEach(System.out::println);
+    }
+    private void searchTop5Series() {
+        List<Series> top5 = repository.findTop5ByOrderByRatingDesc();
+        top5.forEach(System.out::println);
+    }
 
 }
 
