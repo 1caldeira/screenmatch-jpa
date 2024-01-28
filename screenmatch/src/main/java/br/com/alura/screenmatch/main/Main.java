@@ -20,6 +20,7 @@ public class Main {
     private final String API_KEY = "&apikey=ad0f5b1d";
     private SeriesRepository repository;
     private List<Series> seriesList = new ArrayList<>();
+    private Optional<Series> seriesSearch;
     public Main(SeriesRepository repository) {
         this.repository = repository;
     }
@@ -35,6 +36,10 @@ public class Main {
                 4- Search series by title
                 5- Search series by actor
                 6- Top 5 series
+                7- Search series by genre
+                8- Search series by lenght and rating
+                9- Search episodes by name
+                10- Top 5 episodes from a specific series
                 
                            
                 0 - Exit
@@ -65,6 +70,16 @@ public class Main {
                 case 6:
                     searchTop5Series();
                     break;
+                case 7:
+                    searchSeriesByCategory();
+                    break;
+                case 8:
+                    filterByLenghtAndRating();
+                    break;
+                case 9:
+                    searchEpisodeByName();
+                case 10:
+                    topEpisodesBySeries();
                 case 0:
                     System.out.println("Exiting...");
                     break;
@@ -73,6 +88,7 @@ public class Main {
             }
         }
     }
+
     private void searchSeriesWeb() {
         SeriesData data = getSeriesData();
         Series series = new Series(data);
@@ -91,6 +107,7 @@ public class Main {
     private void searchEpisodeBySeries(){
         getSeriesDataGlobalList();
         System.out.println("Choose series by name: ");
+        sc.nextLine();
         var searchName = sc.nextLine();
 
         Optional<Series> series = repository.findByTitleContainingIgnoreCase(searchName);
@@ -125,7 +142,7 @@ public class Main {
     private void searchSeriesByTitle() {
         System.out.println("Choose series by name: ");
         var searchName = sc.nextLine();
-        Optional<Series> seriesSearch = repository.findByTitleContainingIgnoreCase(searchName);
+        seriesSearch = repository.findByTitleContainingIgnoreCase(searchName);
         if(seriesSearch.isPresent()){
             System.out.println("Series data: "+seriesSearch.get());
         }else{
@@ -142,6 +159,41 @@ public class Main {
     private void searchTop5Series() {
         List<Series> top5 = repository.findTop5ByOrderByRatingDesc();
         top5.forEach(System.out::println);
+    }
+
+    private void searchSeriesByCategory(){
+        System.out.println("Which genre do you wish to filter by? ");
+        var genre = sc.nextLine();
+        Category category = Category.fromString(genre);
+        List<Series> seriesByGenre = repository.findByGenre(category);
+        seriesByGenre.forEach(System.out::println);
+    }
+
+    private void filterByLenghtAndRating(){
+        System.out.println("How many seasons do you wish the series to have at maximum? ");
+        int numberOfSeasons = sc.nextInt();
+        System.out.println("What is the minimum rating?");
+        double minimumRating = sc.nextDouble();
+        List<Series> query = repository.seriesBySeasonAndRating(numberOfSeasons, minimumRating);
+        query.forEach(System.out::println);
+
+    }
+
+    private void searchEpisodeByName() {
+        System.out.println("What's the episode name?");
+        var episodeName = sc.nextLine();
+        List<Episode> foundEpisodes = repository.episodesByName(episodeName);
+        foundEpisodes.forEach(e -> System.out.println("'"+e.getTitle() +"'   -  "+e.getSeries().getTitle()+"  -  Season: "+e.getSeason()));
+    }
+
+    private void topEpisodesBySeries() {
+        searchSeriesByTitle();
+        if(seriesSearch.isPresent()){
+            Series series = seriesSearch.get();
+            List<Episode> topEpisodes = repository.top5Episodes(series);
+            topEpisodes.forEach(System.out::println);
+        }
+
     }
 
 }
