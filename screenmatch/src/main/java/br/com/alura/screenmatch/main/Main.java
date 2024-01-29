@@ -37,9 +37,11 @@ public class Main {
                 5- Search series by actor
                 6- Top 5 series
                 7- Search series by genre
-                8- Search series by lenght and rating
+                8- Search series by length and rating
                 9- Search episodes by name
                 10- Top 5 episodes from a specific series
+                11- Worst episodes from a specific series
+                12- Show all episodes
                 
                            
                 0 - Exit
@@ -78,14 +80,34 @@ public class Main {
                     break;
                 case 9:
                     searchEpisodeByName();
+                    break;
                 case 10:
                     topEpisodesBySeries();
+                    break;
+                case 11:
+                    worstEpisodesBySeries();
+                    break;
+                case 12:
+                    getAllEpisodes();
                 case 0:
                     System.out.println("Exiting...");
                     break;
                 default:
                     System.out.println("Invalid option");
             }
+        }
+    }
+
+    private void getAllEpisodes() {
+        getSeriesDataGlobalList();
+        System.out.println("Choose series by name: ");
+        var searchName = sc.nextLine();
+        Optional<Series> series = repository.findByTitleContainingIgnoreCase(searchName);
+        if(series.isPresent()){
+            List<Episode> episodes = series.get().getEpisodes();
+            episodes.forEach(System.out::println);
+        }else{
+            System.out.println("Series not found!");
         }
     }
 
@@ -107,9 +129,7 @@ public class Main {
     private void searchEpisodeBySeries(){
         getSeriesDataGlobalList();
         System.out.println("Choose series by name: ");
-        sc.nextLine();
         var searchName = sc.nextLine();
-
         Optional<Series> series = repository.findByTitleContainingIgnoreCase(searchName);
 
         if(series.isPresent()) {
@@ -122,11 +142,28 @@ public class Main {
                 seasons.add(seasonData);
             }
             seasons.forEach(System.out::println);
+
             List<Episode> episodes = seasons.stream()
                     .flatMap(seasonData -> seasonData.episodes().stream()
                             .map(episodeData -> new Episode(seasonData.number(), episodeData)))
                     .collect(Collectors.toList());
 
+            List<Integer> numberOfEpisodesPerSeason = seasons.stream()
+                    .map(seasonData -> (seasonData.episodes().size()))
+                    .collect(Collectors.toList());
+
+            int listElement = 0;
+            for (int seasonNumber = 1; seasonNumber <= seriesFound.getSeasons(); seasonNumber++) {
+                for (int episodeNumber = 1; episodeNumber <= numberOfEpisodesPerSeason.get(seasonNumber-1); episodeNumber++) {
+                    var json = requestAPI.getData(ADDRESS + seriesFound.getTitle().replace(" ", "+") + "&season=" + seasonNumber + API_KEY + "&type=series" + "&episode="+episodeNumber);
+                    EpisodeData episodeData = conversion.getData(json, EpisodeData.class);
+                    episodes.get(listElement).setSynopsis(episodeData.synopsis());
+                    episodes.get(listElement).setDirector(episodeData.director());
+                    System.out.println("temporada: "+seasonNumber+" episodio: "+episodeNumber+" elemento da lista: "+listElement);
+                    listElement++;
+                }
+                System.out.println(listElement);
+            }
             seriesFound.setEpisodes(episodes);
             repository.save(seriesFound);
         }else{
@@ -194,6 +231,15 @@ public class Main {
             topEpisodes.forEach(System.out::println);
         }
 
+    }
+
+    private void worstEpisodesBySeries() {
+        searchSeriesByTitle();
+        if(seriesSearch.isPresent()){
+            Series series = seriesSearch.get();
+            List<Episode> worstEpisodes = repository.worst5Episodes(series);
+            worstEpisodes.forEach(System.out::println);
+        }
     }
 
 }

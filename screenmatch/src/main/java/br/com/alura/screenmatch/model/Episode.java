@@ -18,6 +18,8 @@ public class Episode {
     private LocalDate releaseDate;
     @ManyToOne
     private Series series;
+    private String director;
+    private String synopsis;
 
     public Episode() {
     }
@@ -36,6 +38,8 @@ public class Episode {
         }catch(DateTimeParseException ex){
             this.releaseDate = null;
         }
+        this.director = episodeData.director();
+        this.synopsis = episodeData.synopsis();
     }
 
     public Integer getSeason() {
@@ -94,13 +98,31 @@ public class Episode {
         this.series = series;
     }
 
+    public String getDirector() {
+        return director;
+    }
+
+    public void setDirector(String director) {
+        this.director = director;
+    }
+
+    public String getSynopsis() {
+        return synopsis;
+    }
+
+    public void setSynopsis(String synopsis) {
+        this.synopsis = synopsis;
+    }
+
     @Override
     public String toString() {
         return
-                "season=" + season +
-                ", title='" + title + '\'' +
-                ", episodeNumber=" + episodeNumber +
-                ", rating=" + rating +
-                ", releaseDate=" + releaseDate;
+                "Episode title:'" + title + '\'' +
+                ", Season " + season +
+                ", Episode " + episodeNumber +
+                ", Rating: " + rating +
+                ", Released on: " + releaseDate +
+                ", Directed by "+ director+
+                "   -   Synopsis: "+synopsis;
     }
 }

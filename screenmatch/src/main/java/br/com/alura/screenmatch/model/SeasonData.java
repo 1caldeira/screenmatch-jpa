@@ -8,4 +8,5 @@ import java.util.List;
 public record SeasonData(@JsonAlias("Season") Integer number,
                          @JsonAlias("Episodes") List<EpisodeData> episodes) {
 
+
 }
