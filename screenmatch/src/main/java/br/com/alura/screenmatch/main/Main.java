@@ -42,6 +42,7 @@ public class Main {
                 10- Top 5 episodes from a specific series
                 11- Worst episodes from a specific series
                 12- Show all episodes
+                13- Search episodes by release date
                 
                            
                 0 - Exit
@@ -89,6 +90,10 @@ public class Main {
                     break;
                 case 12:
                     getAllEpisodes();
+                    break;
+                case 13:
+                    getEpisodesByReleaseDate();
+                    break;
                 case 0:
                     System.out.println("Exiting...");
                     break;
@@ -99,12 +104,9 @@ public class Main {
     }
 
     private void getAllEpisodes() {
-        getSeriesDataGlobalList();
-        System.out.println("Choose series by name: ");
-        var searchName = sc.nextLine();
-        Optional<Series> series = repository.findByTitleContainingIgnoreCase(searchName);
-        if(series.isPresent()){
-            List<Episode> episodes = series.get().getEpisodes();
+        searchSeriesByTitle();
+        if(seriesSearch.isPresent()){
+            List<Episode> episodes = seriesSearch.get().getEpisodes();
             episodes.forEach(System.out::println);
         }else{
             System.out.println("Series not found!");
@@ -162,7 +164,6 @@ public class Main {
                     System.out.println("temporada: "+seasonNumber+" episodio: "+episodeNumber+" elemento da lista: "+listElement);
                     listElement++;
                 }
-                System.out.println(listElement);
             }
             seriesFound.setEpisodes(episodes);
             repository.save(seriesFound);
@@ -239,6 +240,18 @@ public class Main {
             Series series = seriesSearch.get();
             List<Episode> worstEpisodes = repository.worst5Episodes(series);
             worstEpisodes.forEach(System.out::println);
+        }
+    }
+    private void getEpisodesByReleaseDate() {
+        searchSeriesByTitle();
+        if(seriesSearch.isPresent()){
+            Series series = seriesSearch.get();
+            System.out.println("From which year onwards do you wish to see the episodes?");
+            var yearReleased = sc.nextInt();
+            sc.nextLine();
+
+            List<Episode> episodesYear = repository.episodesBySeriesAndYear(series, yearReleased);
+            episodesYear.forEach(System.out::println);
         }
     }
 
